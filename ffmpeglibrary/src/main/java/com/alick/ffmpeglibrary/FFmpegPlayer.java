@@ -16,4 +16,6 @@ public class FFmpegPlayer {
 
     public native void playMyMedia(String url);
 
+    public native void test(String str);
+
 }

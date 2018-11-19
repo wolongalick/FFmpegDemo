@@ -18,6 +18,8 @@ public class MainActivity extends AppCompatActivity {
         TextView tv = (TextView) findViewById(R.id.sample_text);
         fFmpegPlayer.playMyMedia("https://blog.csdn.net/ywl5320");
         tv.setText("fffff");//ssssdfsf`wfwef
+
+        fFmpegPlayer.test("/storage/emulated/0/camera_crop.jpg");
     }
 
 
