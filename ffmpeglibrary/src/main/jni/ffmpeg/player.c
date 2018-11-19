@@ -1,4 +1,3 @@
-
 #include <jni.h>
 
 //ffmpeg库
@@ -10,7 +9,7 @@
 #define LOGI(FORMAT,...) __android_log_print(ANDROID_LOG_INFO,"ywl5320",FORMAT,##__VA_ARGS__);
 
 JNIEXPORT void JNICALL
-Java_com_alick_ffmpegdemo_FFmpegPlayer_playMyMedia(JNIEnv *env, jobject instance, jstring url_) {
+Java_com_alick_ffmpeglibrary_FFmpegPlayer_playMyMedia(JNIEnv *env, jobject instance, jstring url_) {
     const char *url = (*env)->GetStringUTFChars(env, url_, 0);
 
     LOGI("url:%s", url);

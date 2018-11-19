@@ -20,6 +20,8 @@ public class MainActivity extends AppCompatActivity {
         tv.setText("fffff");//ssssdfsf`wfwef
     }
 
+
+
     /**
      * A native method that is implemented by the 'native-lib' native library,
      * which iswefwef  packaged with this application.sf
