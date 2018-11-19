@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
         fFmpegPlayer.playMyMedia("https://blog.csdn.net/ywl5320");
         tv.setText("fffff");//ssssdfsf`wfwef
 
-        fFmpegPlayer.test("/storage/emulated/0/camera_crop.jpg");
+        fFmpegPlayer.test("/storage/emulated/0/ddmsrec_1510054497477.mp4");
     }
 
 
