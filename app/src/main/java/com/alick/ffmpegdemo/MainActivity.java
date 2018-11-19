@@ -4,6 +4,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import com.alick.ffmpeglibrary.FFmpegPlayer;
+
 public class MainActivity extends AppCompatActivity {
     FFmpegPlayer fFmpegPlayer = new FFmpegPlayer();
 

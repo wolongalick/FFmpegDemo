@@ -1,4 +1,4 @@
-package com.alick.ffmpegdemo;
+package com.alick.ffmpeglibrary;
 
 public class FFmpegPlayer {
     static {
