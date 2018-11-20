@@ -18,4 +18,8 @@ public class FFmpegPlayer {
 
     public native void test(String str);
 
+    public native void test2(String str);
+
+    public native void read(String filePath);
+
 }

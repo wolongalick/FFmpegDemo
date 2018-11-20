@@ -2,14 +2,15 @@ cmake_minimum_required(VERSION 3.4.1)
 find_library(log-lib log)
 find_library(android-lib android)
 
-file(GLOB native_srcs "src/main/jni/ffmpeg/*.c")
+file(GLOB_RECURSE native_srcs "*.c")
 
 add_library(cxw_ffmpeg
             SHARED
-            ${native_srcs}
+            src/main/jni/ffmpeg/native-lib.c
+            src/main/jni/ffmpeg/player.c
+            src/main/jni/ffmpeg/c.c
+            src/main/jni/ffmpeg/file_test.c
             )
-
-
 
 
 #添加libavcodec-57.so
