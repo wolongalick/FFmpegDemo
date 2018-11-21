@@ -33,22 +33,31 @@ Java_com_alick_ffmpeglibrary_FFmpegPlayer_read(JNIEnv *env, jobject instance, js
         av_dump_format(pFormatCtx, 0, filePath, 0);
         LOGI("--------------------------------");
 
-        int videoindex = -1;
+        /*int videoindex = -1;
         int i = 0;
         for (i = 0; i < pFormatCtx->nb_streams; i++){
             if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
                 videoindex = i;
                 break;
             }
+        }*/
+
+        int video_stream_index = -1;
+        int i = 0;
+        for (; i < pFormatCtx->nb_streams; i++) {
+            if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+                video_stream_index = i;
+                break;
+            }
         }
 
         AVDictionaryEntry *tag = NULL;
 
-        tag=av_dict_get(pFormatCtx->streams[videoindex]->metadata,"rotate",tag,0);//注意    当视频中有这个信息的时候才会有返回，否则返回NULL
-        if (tag!=NULL){
-            int arg=atoi(tag->value);//将字符转成int类型
-            LOGI("角度:%2d",arg);
-        }else{
+        tag = av_dict_get(pFormatCtx->streams[video_stream_index]->metadata, "rotate", tag,0);//注意    当视频中有这个信息的时候才会有返回，否则返回NULL
+        if (tag != NULL) {
+            int arg = atoi(tag->value);//将字符转成int类型
+            LOGI("角度:%2d", arg);
+        } else {
             LOGE("tag==NULL \n");
         }
 
