@@ -5,6 +5,8 @@
 #include <libavformat/avformat.h>
 #include <libavutil/log.h>
 #include <android/log.h>
+#include <libavcodec/avcodec.h>
+#include <stdio.h>
 
 #define TAG "alick" // 这个是自定义的LOG的标识
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,TAG ,__VA_ARGS__) // 定义LOGD类型
@@ -12,6 +14,15 @@
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN,TAG ,__VA_ARGS__) // 定义LOGW类型
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,TAG ,__VA_ARGS__) // 定义LOGE类型
 #define LOGF(...) __android_log_print(ANDROID_LOG_FATAL,TAG ,__VA_ARGS__) // 定义LOGF类型
+
+
+char *buildStr(char *str1,char *str2);
+
+static double r2d(AVRational avRational) {
+    return avRational.num == 0 || avRational.den == 0 ? 0.0 : ((double) avRational.num) /
+                                                              ((double) avRational.den);
+}
+
 
 JNIEXPORT void JNICALL
 Java_com_alick_ffmpeglibrary_FFmpegPlayer_read(JNIEnv *env, jobject instance, jstring filePath_) {
@@ -21,8 +32,12 @@ Java_com_alick_ffmpeglibrary_FFmpegPlayer_read(JNIEnv *env, jobject instance, js
     const char *filePath = (*env)->GetStringUTFChars(env, filePath_, 0);
 
     AVFormatContext *pFormatCtx = avformat_alloc_context();
-    int open_input = avformat_open_input(&pFormatCtx, filePath, NULL, NULL);
-    LOGI("打开文件结果码:%2d,错误信息:", open_input, av_err2str(open_input));
+    int open_input = avformat_open_input(&pFormatCtx, filePath, 0, 0);
+
+
+
+
+    LOGI("打开文件结果码:%2d,错误信息:%s", open_input, av_err2str(open_input));
     if (open_input != 0) {
         char buf[1024];
         av_strerror(open_input, buf, 1024);
@@ -42,30 +57,189 @@ Java_com_alick_ffmpeglibrary_FFmpegPlayer_read(JNIEnv *env, jobject instance, js
             }
         }*/
 
-        int video_stream_index = -1;
-        int i = 0;
-        for (; i < pFormatCtx->nb_streams; i++) {
-            if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
-                video_stream_index = i;
-                break;
-            }
-        }
-
-        AVDictionaryEntry *tag = NULL;
-
-        tag = av_dict_get(pFormatCtx->streams[video_stream_index]->metadata, "rotate", tag,0);//注意    当视频中有这个信息的时候才会有返回，否则返回NULL
-        if (tag != NULL) {
-            int arg = atoi(tag->value);//将字符转成int类型
-            LOGI("角度:%2d", arg);
-        } else {
-            LOGE("tag==NULL \n");
-        }
-
-
         avformat_close_input(&pFormatCtx);
     }
 
-    (*env)->
-            ReleaseStringUTFChars(env, filePath_, filePath
-    );
+    (*env)->ReleaseStringUTFChars(env, filePath_, filePath);
 }
+
+JNIEXPORT jstring JNICALL
+Java_com_alick_ffmpeglibrary_FFmpegPlayer_getFFmpegConfigInfo(JNIEnv *env, jobject instance) {
+    return (*env)->NewStringUTF(env, avcodec_configuration());
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_alick_ffmpeglibrary_FFmpegPlayer_readFileContent(JNIEnv *env, jobject instance,
+                                                          jstring filePath_) {
+    const char *filePath = (*env)->GetStringUTFChars(env, filePath_, 0);
+
+    FILE *pFILE = fopen(filePath, "r");
+
+    if (pFILE == NULL) {
+        LOGE("打开文件失败");
+        return NULL;
+    }
+
+    const int size = 1024;
+    char buf[size] = "\0";
+    int len = 0;
+    int i = 0;
+    while (fgets(buf, size, pFILE) != NULL) {
+        len = strlen(buf);
+        buf[len - 1] = '\0';
+        LOGI("%s %d \n", buf, len - 1);
+    }
+
+    fclose(pFILE);
+
+
+    (*env)->ReleaseStringUTFChars(env, filePath_, filePath);
+
+    return (*env)->NewStringUTF(env, filePath);
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_alick_ffmpeglibrary_FFmpegPlayer_readVideoFileInfo(JNIEnv *env, jobject instance,
+                                                            jstring filePath_) {
+    const char *filePath = (*env)->GetStringUTFChars(env, filePath_, 0);
+
+    av_register_all();
+
+    AVFormatContext *avFormatContext = NULL;
+    int result = avformat_open_input(&avFormatContext, filePath, 0, 0);
+
+    if (result != 0) {
+        char *str = NULL;
+        LOGE("打开视频文件失败%s", av_err2str(result));
+        return (*env)->NewStringUTF(env, "打开视频文件失败");
+    }
+
+    char *info = "视频信息:\n";
+    char *duationStr = "视频时长";
+    int64_t duration = (avFormatContext->duration) / 1000000;
+    char *second = "秒\n";
+
+    char *streamsStr = "流的个数:";
+    int streamNumber = avFormatContext->nb_streams;
+    char *number = "个\n";
+
+    char buff1[100];
+    sprintf(buff1, "%s%s%lld%s%s%d%s", info, duationStr, duration, second, streamsStr,
+            streamNumber, number);
+
+    char *string=NULL;
+    for (int i = 0; i < streamNumber; ++i) {
+        AVStream *pStream = avFormatContext->streams[i];
+        enum AVMediaType type = pStream->codecpar->codec_type;
+        int width = 0;
+        char *str;
+        if(type==AVMEDIA_TYPE_VIDEO){
+            double fps = r2d(pStream->avg_frame_rate);
+            int width = pStream->codecpar->width;
+            int height = pStream->codecpar->height;
+            enum AVCodecID codecID = pStream->codecpar->codec_id;
+            char buff2[100];
+            sprintf(buff2,"fps:%f,宽:%d,编码器ID:%d,高:%d\n",fps,width,height,codecID);
+            LOGI("buff2:%s",buff2);
+            string= (char *)malloc(strlen(buff1) + strlen(buff2));
+
+            strcpy(string,buff1);
+            strcat(string,buff2);
+
+        } else if(type==AVMEDIA_TYPE_AUDIO){
+            int sample_rate = pStream->codecpar->sample_rate;
+            int channels = pStream->codecpar->channels;
+            int format = pStream->codecpar->format;
+            char buf3[100];
+            sprintf(buf3,"采样率:%d,频道个数:%d,格式:%d\n",sample_rate,channels,format);
+            strcat(string,buf3);
+//            malloc(strlen(string))
+//            string="音频";
+        }
+    }
+
+
+    //关闭文件流
+    avformat_close_input(&avFormatContext);
+
+    return (*env)->NewStringUTF(env, string);
+}
+
+
+
+
+JNIEXPORT jstring JNICALL
+Java_com_alick_ffmpeglibrary_FFmpegPlayer_readVideoFileInfo2(JNIEnv *env, jobject instance,
+                                                             jstring filePath_) {
+    const char *filePath = (*env)->GetStringUTFChars(env, filePath_, 0);
+
+    av_register_all();
+
+    AVFormatContext *pAVFormatContext = avformat_alloc_context();
+
+    int open_input = avformat_open_input(&pAVFormatContext, filePath, 0, 0);
+    char *string=NULL;
+    if(open_input==0){
+        string=buildStr("打开文件成功:",filePath);
+    } else{
+        char *s1="打开文件失败:";
+        char *error=av_err2str(open_input);
+        string=malloc(strlen(s1)+strlen(error));
+
+        sprintf(string,"%s%s",s1,error);
+
+        LOGE(string,"eeewwwwwww");
+        (*env)->ReleaseStringUTFChars(env, filePath_, filePath);
+
+        return (*env)->NewStringUTF(env,string);
+    }
+
+//    int stream = av_find_best_stream(pAVFormatContext, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
+
+
+    AVPacket *pPacket = av_packet_alloc();
+
+    int videoStreamIndex=0;
+    int streams = pAVFormatContext->nb_streams;
+    for (int i = 0; i < streams; ++i) {
+        AVStream *pStream = pAVFormatContext->streams[i];
+        if(pStream->codecpar->codec_type==AVMEDIA_TYPE_VIDEO){
+            videoStreamIndex=i;
+        }
+    }
+
+    for(;;){
+        int frame = av_read_frame(pAVFormatContext, pPacket);
+        if(frame!=0){
+            LOGI("读到结尾处!");
+
+            int pos = 3 * r2d(pAVFormatContext->streams[videoStreamIndex]->time_base);
+
+            //从视频流的中间部分向后查找关键帧
+            av_seek_frame(pAVFormatContext,videoStreamIndex,pos,AVSEEK_FLAG_BACKWARD|AVSEEK_FLAG_FRAME);
+            continue;
+        }
+        LOGI("stream=%d size=%d pts=%lld flag=%d",
+             pPacket->stream_index,pPacket->size,pPacket->pts,pPacket->flags
+        );
+
+        av_packet_unref(pPacket);
+    }
+
+
+    avformat_close_input(&pAVFormatContext);
+
+    //释放jni的字符串
+    (*env)->ReleaseStringUTFChars(env, filePath_, filePath);
+
+    return (*env)->NewStringUTF(env, string);
+}
+
+char *buildStr(char *str1,char *str2){
+    char *result=malloc(strlen(str1)+strlen(str2));
+    sprintf(result,"%s%s",str1,str2);
+    return result;
+}
+
+
+

@@ -73,7 +73,7 @@ set_target_properties( swscale-4
 
 
 
-
+#头文件位置
 include_directories(src/main/jni/ffmpeg/include)
 
 target_link_libraries( # Specifies the target library.

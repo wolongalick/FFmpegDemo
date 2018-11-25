@@ -1,5 +1,7 @@
 package com.alick.ffmpeglibrary;
 
+import javax.xml.namespace.NamespaceContext;
+
 public class FFmpegPlayer {
     static {
         System.loadLibrary("avcodec-57");
@@ -21,5 +23,13 @@ public class FFmpegPlayer {
     public native void test2(String str);
 
     public native void read(String filePath);
+
+    public native String getFFmpegConfigInfo();
+
+    public native String readFileContent(String filePath);
+
+    public native String readVideoFileInfo(String filePath);
+
+    public native String readVideoFileInfo2(String filePath);
 
 }

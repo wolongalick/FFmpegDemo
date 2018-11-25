@@ -55,7 +55,7 @@ typedef enum {
  * @param le If 1, the lowest bit represents the coefficient for the highest
  *           exponent of the corresponding polynomial (both for poly and
  *           actual CRC).
- *           If 0, you must swap the CRC parameter and the result of av_crc
+ *           If 0, you must swap1 the CRC parameter and the result of av_crc
  *           if you need the standard representation (can be simplified in
  *           most cases to e.g. bswap16):
  *           av_bswap32(crc << (32-bits))
