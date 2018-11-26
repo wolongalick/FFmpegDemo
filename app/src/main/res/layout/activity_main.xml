@@ -29,6 +29,12 @@
         android:text="读取视频文件2"
         />
 
+    <Button
+        android:id="@+id/btn_imoocBtn"
+        android:text="慕课网demo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
     <TextView
         android:id="@+id/tv_ffmepgConfigInfo"
         android:layout_width="match_parent"

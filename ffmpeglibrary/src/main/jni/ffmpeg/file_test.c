@@ -34,9 +34,6 @@ Java_com_alick_ffmpeglibrary_FFmpegPlayer_read(JNIEnv *env, jobject instance, js
     AVFormatContext *pFormatCtx = avformat_alloc_context();
     int open_input = avformat_open_input(&pFormatCtx, filePath, 0, 0);
 
-
-
-
     LOGI("打开文件结果码:%2d,错误信息:%s", open_input, av_err2str(open_input));
     if (open_input != 0) {
         char buf[1024];
@@ -175,6 +172,10 @@ Java_com_alick_ffmpeglibrary_FFmpegPlayer_readVideoFileInfo2(JNIEnv *env, jobjec
 
     av_register_all();
 
+    avformat_network_init();
+
+    avcodec_register_all();
+
     AVFormatContext *pAVFormatContext = avformat_alloc_context();
 
     int open_input = avformat_open_input(&pAVFormatContext, filePath, 0, 0);
@@ -194,38 +195,97 @@ Java_com_alick_ffmpeglibrary_FFmpegPlayer_readVideoFileInfo2(JNIEnv *env, jobjec
         return (*env)->NewStringUTF(env,string);
     }
 
-//    int stream = av_find_best_stream(pAVFormatContext, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
+    //
+    int audioStream = av_find_best_stream(pAVFormatContext, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
 
-
-    AVPacket *pPacket = av_packet_alloc();
-
-    int videoStreamIndex=0;
+    int videoStream=0;
     int streams = pAVFormatContext->nb_streams;
     for (int i = 0; i < streams; ++i) {
         AVStream *pStream = pAVFormatContext->streams[i];
         if(pStream->codecpar->codec_type==AVMEDIA_TYPE_VIDEO){
-            videoStreamIndex=i;
+            videoStream=i;
         }
     }
 
+    //取出软解码器
+    AVCodecParameters *avCodecParameters = pAVFormatContext->streams[videoStream]->codecpar;
+    AVCodec *avCodec=avcodec_find_decoder(avCodecParameters->codec_id);
+
+    //取出硬解码器
+//    avCodec=avcodec_find_decoder_by_name("h264_mediacodec");
+
+    if(!avCodec){
+        //释放jni的字符串
+        (*env)->ReleaseStringUTFChars(env, filePath_, filePath);
+        return (*env)->NewStringUTF(env, "查找解码器失败");
+    }
+
+    AVCodecContext *avCodecContext=avcodec_alloc_context3(avCodec);
+    //将stream流中的参数拷贝到avCodecParameters中
+    avcodec_parameters_to_context(avCodecContext,avCodecParameters);
+    avCodecContext->thread_count=1;
+
+
+    //打开解码器
+    int result_codec_open = avcodec_open2(avCodecContext, NULL, NULL);
+    if(result_codec_open!=0){
+        //释放jni的字符串
+        (*env)->ReleaseStringUTFChars(env, filePath_, filePath);
+        return (*env)->NewStringUTF(env, "打开解码器失败");
+    }
+
+    AVPacket *pPacket = av_packet_alloc();
+
+    AVFrame *avFrame=av_frame_alloc();
+
+
     for(;;){
-        int frame = av_read_frame(pAVFormatContext, pPacket);
-        if(frame!=0){
+        int result = av_read_frame(pAVFormatContext, pPacket);
+
+        if(result!=0){
             LOGI("读到结尾处!");
 
-            int pos = 3 * r2d(pAVFormatContext->streams[videoStreamIndex]->time_base);
+            int pos = 3 * r2d(pAVFormatContext->streams[videoStream]->time_base);
 
             //从视频流的中间部分向后查找关键帧
-            av_seek_frame(pAVFormatContext,videoStreamIndex,pos,AVSEEK_FLAG_BACKWARD|AVSEEK_FLAG_FRAME);
+            av_seek_frame(pAVFormatContext,videoStream,pos,AVSEEK_FLAG_BACKWARD|AVSEEK_FLAG_FRAME);
             continue;
         }
-        LOGI("stream=%d size=%d pts=%lld flag=%d",
-             pPacket->stream_index,pPacket->size,pPacket->pts,pPacket->flags
-        );
+
+        //非适配流则不做任何处理
+        if(pPacket->stream_index!=videoStream){
+            continue;
+        }
+
+//        LOGI("stream=%d size=%d pts=%lld flag=%d",
+//             pPacket->stream_index,pPacket->size,pPacket->pts,pPacket->flags
+//        );
+        AVCodecContext *cc=avCodecContext;
+        if(pPacket->stream_index==audioStream){
+            cc=avCodecContext;
+        }
+
+        //发送到线程中解码
+        result=avcodec_send_packet(avCodecContext,pPacket);
+
+        if(result!=0 ){
+            LOGE("avcodec_send_packet失败:",av_err2str(result));
+            continue;
+        }
+
+        result=avcodec_receive_frame(avCodecContext,avFrame);
+
+        if(result!=0){
+            LOGE("avcodec_receive_frame失败:",av_err2str(result));
+        }
+
+        LOGI("avcodec_receive_frame成功:%lld",avFrame->pts);
+
+
+
 
         av_packet_unref(pPacket);
     }
-
 
     avformat_close_input(&pAVFormatContext);
 
@@ -240,6 +300,5 @@ char *buildStr(char *str1,char *str2){
     sprintf(result,"%s%s",str1,str2);
     return result;
 }
-
 
 

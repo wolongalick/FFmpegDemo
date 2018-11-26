@@ -13,7 +13,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button btn_readFile;
     private Button btn_readVideoFile;
     private Button btn_readVideoFile2;
+    private Button btn_imoocBtn;
     private TextView tv_ffmepgConfigInfo;
+
     FFmpegPlayer fFmpegPlayer = new FFmpegPlayer();
 
     @Override
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_readVideoFile= findViewById(R.id.btn_readVideoFile);
         btn_readVideoFile2= findViewById(R.id.btn_readVideoFile2);
         tv_ffmepgConfigInfo=findViewById(R.id.tv_ffmepgConfigInfo);
+        btn_imoocBtn=findViewById(R.id.btn_imoocBtn);
 
         // Example of a call to a native method
 //        fFmpegPlayer.playMyMedia("https://blog.csdn.net/ywl5320");
@@ -38,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_readFile.setOnClickListener(this);
         btn_readVideoFile.setOnClickListener(this);
         btn_readVideoFile2.setOnClickListener(this);
+        btn_imoocBtn.setOnClickListener(this);
     }
 
     @Override
@@ -53,6 +57,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn_readVideoFile2:
                 String s1 = fFmpegPlayer.readVideoFileInfo2("/storage/emulated/0/DCIM/Camera/VID_20181130_140540.mp4");
                 T.show(this,s1);
+                break;
+            case R.id.btn_imoocBtn:
+                fFmpegPlayer.executeImoocDemo("/storage/emulated/0/DCIM/Camera/VID_20181130_140540.mp4");
                 break;
         }
     }
