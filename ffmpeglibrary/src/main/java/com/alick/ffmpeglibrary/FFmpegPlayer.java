@@ -32,5 +32,5 @@ public class FFmpegPlayer {
 
     public native String readVideoFileInfo2(String filePath);
 
-    public native String executeImoocDemo(String s);
+    public native String executeImoocDemo(String srcFilePath,String dstFilePath);
 }

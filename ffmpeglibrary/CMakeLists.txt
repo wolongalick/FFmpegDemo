@@ -11,6 +11,7 @@ add_library(cxw_ffmpeg
             src/main/jni/ffmpeg/c.c
             src/main/jni/ffmpeg/file_test.c
             src/main/jni/ffmpeg/imooc_test.c
+            src/main/jni/ffmpeg/lib_utils.c
             )
 
 

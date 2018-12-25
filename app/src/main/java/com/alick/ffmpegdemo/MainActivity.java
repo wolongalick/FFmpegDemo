@@ -1,5 +1,6 @@
 package com.alick.ffmpegdemo;
 
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -7,7 +8,10 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.alick.ffmpeglibrary.FFmpegPlayer;
+import com.alick.ffmpeglibrary.FileUtils;
 import com.alick.ffmpeglibrary.T;
+
+import java.io.File;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private Button btn_readFile;
@@ -55,11 +59,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 T.show(this,s);
                 break;
             case R.id.btn_readVideoFile2:
-                String s1 = fFmpegPlayer.readVideoFileInfo2("/storage/emulated/0/DCIM/Camera/VID_20181130_140540.mp4");
+                String s1 = fFmpegPlayer.readVideoFileInfo2("/storage/emulated/0/FFmpegDemo/src/台球.mp4");
                 T.show(this,s1);
                 break;
             case R.id.btn_imoocBtn:
-                fFmpegPlayer.executeImoocDemo("/storage/emulated/0/DCIM/Camera/VID_20181130_140540.mp4");
+                File file = new File(Environment.getExternalStorageDirectory() + File.separator + "FFmpegDemo", System.currentTimeMillis() + ".aac");
+
+                boolean file1 = FileUtils.createFile(file);
+                if(!file1){
+                    T.show(this,"创建aac文件失败");
+                    return;
+                }
+                String result = fFmpegPlayer.executeImoocDemo("/storage/emulated/0/FFmpegDemo/src/taiqiu.mp4", file.getAbsolutePath());
+                T.show(this,result);
                 break;
         }
     }

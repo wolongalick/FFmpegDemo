@@ -7,16 +7,8 @@
 #include <android/log.h>
 #include <libavcodec/avcodec.h>
 #include <stdio.h>
+#include "lib_utils.h"
 
-#define TAG "alick" // 这个是自定义的LOG的标识
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,TAG ,__VA_ARGS__) // 定义LOGD类型
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO,TAG ,__VA_ARGS__) // 定义LOGI类型
-#define LOGW(...) __android_log_print(ANDROID_LOG_WARN,TAG ,__VA_ARGS__) // 定义LOGW类型
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,TAG ,__VA_ARGS__) // 定义LOGE类型
-#define LOGF(...) __android_log_print(ANDROID_LOG_FATAL,TAG ,__VA_ARGS__) // 定义LOGF类型
-
-
-char *buildStr(char *str1,char *str2);
 
 static double r2d(AVRational avRational) {
     return avRational.num == 0 || avRational.den == 0 ? 0.0 : ((double) avRational.num) /
@@ -100,7 +92,7 @@ Java_com_alick_ffmpeglibrary_FFmpegPlayer_readVideoFileInfo(JNIEnv *env, jobject
                                                             jstring filePath_) {
     const char *filePath = (*env)->GetStringUTFChars(env, filePath_, 0);
 
-    av_register_all();
+    avcodec_register_all();
 
     AVFormatContext *avFormatContext = NULL;
     int result = avformat_open_input(&avFormatContext, filePath, 0, 0);
@@ -108,7 +100,7 @@ Java_com_alick_ffmpeglibrary_FFmpegPlayer_readVideoFileInfo(JNIEnv *env, jobject
     if (result != 0) {
         char *str = NULL;
         LOGE("打开视频文件失败%s", av_err2str(result));
-        return (*env)->NewStringUTF(env, "打开视频文件失败");
+        return NULL;
     }
 
     char *info = "视频信息:\n";
@@ -294,11 +286,4 @@ Java_com_alick_ffmpeglibrary_FFmpegPlayer_readVideoFileInfo2(JNIEnv *env, jobjec
 
     return (*env)->NewStringUTF(env, string);
 }
-
-char *buildStr(char *str1,char *str2){
-    char *result=malloc(strlen(str1)+strlen(str2));
-    sprintf(result,"%s%s",str1,str2);
-    return result;
-}
-
 
