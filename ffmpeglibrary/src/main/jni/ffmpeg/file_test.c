@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include "lib_utils.h"
 
-
 static double r2d(AVRational avRational) {
     return avRational.num == 0 || avRational.den == 0 ? 0.0 : ((double) avRational.num) /
                                                               ((double) avRational.den);
@@ -287,3 +286,16 @@ Java_com_alick_ffmpeglibrary_FFmpegPlayer_readVideoFileInfo2(JNIEnv *env, jobjec
     return (*env)->NewStringUTF(env, string);
 }
 
+JNIEXPORT jint JNICALL
+Java_com_alick_ffmpegdemo_MainActivity_run(JNIEnv *env, jclass type, jint cmdLen,jobjectArray commands) {
+    int argc = (*env)->GetArrayLength(env, commands);
+    char *argv[argc];
+    int i;
+    for (i = 0; i < argc; i++) {
+        jstring js = (jstring) (*env)->GetObjectArrayElement(env, commands, i);
+        argv[i] = (char*) (*env)->GetStringUTFChars(env, js, 0);
+    }
+    LOGD("----------begin---------");
+//    return ffmpeg_exec(argc, argv);
+    return 0;
+}

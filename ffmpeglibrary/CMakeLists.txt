@@ -12,82 +12,91 @@ add_library(cxw_ffmpeg
             src/main/jni/ffmpeg/file_test.c
             src/main/jni/ffmpeg/imooc_test.c
             src/main/jni/ffmpeg/lib_utils.c
-            )
+
+            # Provides a relative path to your source file(s).
+#            src/main/jni/ffmpeg/include/cmdutils.c
+#            src/main/jni/ffmpeg/include/ffmpeg.c
+#            src/main/jni/ffmpeg/include/ffmpeg_filter.c
+#            src/main/jni/ffmpeg/include/ffmpeg_hw.c
+#            src/main/jni/ffmpeg/include/ffmpeg_opt.c
+        )
 
 
-#添加libavcodec-57.so
-add_library( avcodec-57
+#添加libavcodec.so
+add_library( avcodec
              SHARED
              IMPORTED)
-set_target_properties( avcodec-57
+set_target_properties( avcodec
                        PROPERTIES IMPORTED_LOCATION
-                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libavcodec-57.so)
+                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libavcodec.so)
 
-#添加libavdevice-57.so
-#add_library( avdevice-57
+#添加libavdevice.so
+#add_library( avdevice
 #             SHARED
 #             IMPORTED)
-#set_target_properties( avdevice-57
+#set_target_properties( avdevice
 #                       PROPERTIES IMPORTED_LOCATION
-#                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libavdevice-57.so)
+#                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libavdevice.so)
 
-add_library( avfilter-6
+add_library( avfilter
              SHARED
              IMPORTED)
-set_target_properties( avfilter-6
+set_target_properties( avfilter
                        PROPERTIES IMPORTED_LOCATION
-                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libavfilter-6.so)
+                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libavfilter.so)
 
-add_library( avformat-57
+add_library( avformat
              SHARED
              IMPORTED)
-set_target_properties( avformat-57
+set_target_properties( avformat
                        PROPERTIES IMPORTED_LOCATION
-                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libavformat-57.so)
+                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libavformat.so)
 
-add_library( avutil-55
+add_library( avutil
              SHARED
              IMPORTED)
-set_target_properties( avutil-55
+set_target_properties( avutil
                        PROPERTIES IMPORTED_LOCATION
-                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libavutil-55.so)
+                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libavutil.so)
 
-add_library( swresample-2
+add_library( swresample
              SHARED
              IMPORTED)
-set_target_properties( swresample-2
+set_target_properties( swresample
                        PROPERTIES IMPORTED_LOCATION
-                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libswresample-2.so)
+                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libswresample.so)
 
-add_library( swscale-4
+add_library( swscale
              SHARED
              IMPORTED)
-set_target_properties( swscale-4
+set_target_properties( swscale
                        PROPERTIES IMPORTED_LOCATION
-                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libswscale-4.so)
+                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libswscale.so)
 
-#add_library( postproc-54
+#add_library( postproc
 #             SHARED
 #             IMPORTED)
-#set_target_properties( postproc-54
+#set_target_properties( postproc
 #                       PROPERTIES IMPORTED_LOCATION
-#                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libpostproc-54.so)
+#                       ${CMAKE_SOURCE_DIR}/src/main/jni/ffmpeg/armeabi/libpostproc.so)
 
 
 
 #头文件位置
 include_directories(src/main/jni/ffmpeg/include)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 target_link_libraries( # Specifies the target library.
                       cxw_ffmpeg
-                      avcodec-57
-                      avfilter-6
-                      avformat-57
-                      avutil-55
-                      swresample-2
-                      swscale-4
-                      #avdevice-57
-                      #postproc-54
+                      avcodec
+                      avfilter
+                      avformat
+                      avutil
+                      swresample
+                      swscale
+                      #avdevice
+                      #postproc
 
                        # Links the target library to the log library
                        # included in the NDK.

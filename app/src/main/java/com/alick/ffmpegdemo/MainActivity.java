@@ -85,4 +85,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //    static {
 //        System.loadLibrary("native-lib");
 //    }
+
+    private static native int run(int cmdLen, String[] cmd);
 }
